@@ -1,3 +1,9 @@
+# Transformer-2024
+
+This code is refactored in process.py and batch.py. 
+Add the requirements.txt.
+
+
 # Transformer
 
 This is a pytorch implementation of the transformer model. If you'd like to understand the model, or any of the code better, please refer to <a href=https://towardsdatascience.com/how-to-code-the-transformer-in-pytorch-24db27c8f9ec>my tutorial</a>.
