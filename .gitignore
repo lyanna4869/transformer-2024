@@ -1,0 +1,14 @@
+__pycache__/
+.vscode/
+.idea/
+*.pyc
+*.pyo
+.env
+.venv
+20241231v1/
+20241231v2/
+gcc-11.2.0/
+*.tar.gz
+*.tar.gz.1
+*.tar.gz.2
+*.tar.bz2
