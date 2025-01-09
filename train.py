@@ -11,6 +11,7 @@ import dill as pickle
 def train_model(model, opt):
     
     print("training model...")
+    # 切换到train模式，Dropout 和 BatchNorm 层。
     model.train()
     start = time.time()
     if opt.checkpoint > 0:
@@ -26,7 +27,7 @@ def train_model(model, opt):
         if opt.checkpoint > 0:
             torch.save(model.state_dict(), 'weights/model_weights')
                     
-        for i, batch in enumerate(opt.train): 
+        for i, batch in enumerate(opt.train): # opt.train是dataloader
           
             src = batch.src.transpose(0, 1).to(opt.device)
             trg = batch.trg.transpose(0, 1).to(opt.device)
@@ -34,11 +35,16 @@ def train_model(model, opt):
             src_mask, trg_mask = create_masks(src, trg_input, opt.src_pad, opt.trg_pad, opt.device)
             src_mask.to(opt.device)
             trg_mask.to(opt.device)
+            # 计算预测值
             preds = model(src, trg_input, src_mask, trg_mask)
             ys = trg[:, 1:].contiguous().view(-1)
+            #清理优化器梯度
             opt.optimizer.zero_grad()
+            #计算loss
             loss = F.cross_entropy(preds.view(-1, preds.size(-1)), ys, ignore_index=opt.trg_pad)
+            # 反向传播loss
             loss.backward()
+            # 优化器优化参数
             opt.optimizer.step()
             if opt.SGDR == True: 
                 opt.sched.step()
@@ -87,19 +93,23 @@ def main():
     parser.add_argument('-floyd', action='store_true')
     parser.add_argument('-checkpoint', type=int, default=0)
 
+
+# 命令行输入参数解析
     opt = parser.parse_args()
 
     opt.device = 'cuda' if opt.no_cuda is False else 'cpu'
     if opt.device == 'cuda':
         assert torch.cuda.is_available()
 
-    read_data(opt)
-    SRC, TRG = create_fields(opt)
-    opt.train, src_vocab, trg_vocab = create_dataset(opt, SRC, TRG)
+#获取dataloader
+    read_data(opt) # 读取数据的存放路径
+    SRC, TRG = create_fields(opt) # 获取对应语言的分词器
+    opt.train, src_vocab, trg_vocab = create_dataset(opt, SRC, TRG) # dataloader
 
+# 创建model
     model = get_model(opt, len(src_vocab), len(trg_vocab))
 
-
+# 写优化器
     opt.optimizer = torch.optim.Adam(model.parameters(), lr=opt.lr, betas=(0.9, 0.98), eps=1e-9)
     if opt.SGDR == True:
         opt.sched = CosineWithRestarts(opt.optimizer, T_max=opt.train_len)
@@ -111,7 +121,8 @@ def main():
         os.mkdir('weights')
         pickle.dump(SRC, open('weights/SRC.pkl', 'wb'))
         pickle.dump(TRG, open('weights/TRG.pkl', 'wb'))
-    
+
+# train
     train_model(model, opt)
 
     if opt.floyd is False:

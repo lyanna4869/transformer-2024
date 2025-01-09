@@ -150,7 +150,7 @@ def create_fields(opt):
 
     print("loading spacy tokenizers...")
 
-    src_tokenizer = get_tokenizer("spacy", language=opt.src_lang)
+    src_tokenizer = get_tokenizer("spacy", language=opt.src_lang) # 获取一个分词器(spacy)
     trg_tokenizer = get_tokenizer("spacy", language=opt.trg_lang)
 
     return src_tokenizer, trg_tokenizer
@@ -167,17 +167,18 @@ def create_dataset(opt, src_tokenizer, trg_tokenizer):
     print("creating dataset and iterator... ")
 
     dataset = TranslationDataset(
-        src_data=opt.src_data,
+        src_data=opt.src_data, # 存放数据的路径
         trg_data=opt.trg_data,
-        src_tokenizer=src_tokenizer,
+        src_tokenizer=src_tokenizer, # 分词器
         trg_tokenizer=trg_tokenizer,
         max_strlen=opt.max_strlen
     )
 
-    src_vocab = build_vocab(dataset, src_tokenizer)
+    src_vocab = build_vocab(dataset, src_tokenizer) # 构建词汇表
     trg_vocab = build_vocab(dataset, trg_tokenizer)
 
-    src_vocab.set_default_index(src_vocab["<unk>"])
+    src_vocab.set_default_index(src_vocab["<unk>"]) #为 词汇表（Vocabulary） 设置默认索引（Default Index），
+    # 用于处理在翻译任务或其他 NLP 任务中出现的 未知词（unknown tokens, <unk>）
     trg_vocab.set_default_index(trg_vocab["<unk>"])
 
     dataloader = DataLoader(dataset, batch_size=opt.batchsize, shuffle=True, collate_fn=lambda x: collate_fn(x, src_vocab, trg_vocab))

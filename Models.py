@@ -11,7 +11,7 @@ def get_clones(module, N):
 class Encoder(nn.Module):
     def __init__(self, vocab_size, d_model, N, heads, dropout):
         super().__init__()
-        self.N = N
+        self.N = N # 编码器的层数，即 EncoderLayer 的数量
         self.embed = Embedder(vocab_size, d_model)
         self.pe = PositionalEncoder(d_model, dropout=dropout)
         self.layers = get_clones(EncoderLayer(d_model, heads, dropout), N)
